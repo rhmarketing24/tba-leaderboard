@@ -1,0 +1,13 @@
+{
+  "name": "indexer",
+  "version": "1.0.0",
+  "description": "Base on-chain indexer for TBA leaderboard",
+  "type": "module",
+  "scripts": {
+    "start": "node index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "viem": "^2.43.3"
+  }
+}
