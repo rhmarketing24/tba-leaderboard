@@ -4,10 +4,12 @@
   "description": "Base on-chain indexer for TBA leaderboard",
   "type": "module",
   "scripts": {
-    "start": "node index.ts"
+    "start": "node --loader ts-node/esm index.ts"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "viem": "^2.43.3"
+    "viem": "^2.43.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
