@@ -1,13 +1,22 @@
 "use client";
 
+type WeeklyRow = {
+  WEEK: number;
+  DISTRIBUTION_DATE: string;
+  USDC: number;
+  USERS: number;
+};
+
 type Props = {
   open: boolean;
   onClose: () => void;
-  rows: any[];
+  rows: WeeklyRow[];
   page: number;
   onPrev: () => void;
   onNext: () => void;
 };
+
+const PAGE_SIZE = 10;
 
 export default function WeeklyModal({
   open,
@@ -19,46 +28,56 @@ export default function WeeklyModal({
 }: Props) {
   if (!open) return null;
 
+  const start = (page - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  const paginated = rows.slice(start, end);
+
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      {/* Modal box */}
-      <div
-        className="
-          w-[90%]
-          max-w-sm
-          max-h-[85vh]
-          rounded-2xl
-          bg-white
-          p-5
-          shadow-xl
-          flex
-          flex-col
-        "
-      >
+      {/* Modal */}
+      <div className="w-[90%] max-w-sm max-h-[85vh] rounded-2xl bg-white p-5 shadow-xl flex flex-col">
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Weekly Distributed</h2>
-          <button
-            onClick={onClose}
-            className="text-xl text-gray-500"
-          >
+          <button onClick={onClose} className="text-xl text-gray-500">
             ✕
           </button>
         </div>
 
-        {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-          {rows.map((r, i) => (
+        {/* Column headers */}
+        <div className="grid grid-cols-[60px_1fr_80px_70px] px-3 py-2 text-xs font-semibold text-gray-500 text-center">
+          <div>Week</div>
+          <div>Date</div>
+          <div>USDC</div>
+          <div>Users</div>
+        </div>
+
+        {/* Rows */}
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+          {paginated.map((r, i) => (
             <div
               key={i}
-              className="flex items-center justify-between rounded-xl border px-4 py-3 text-sm"
+              className="grid grid-cols-[60px_1fr_80px_70px] items-center rounded-xl border px-3 py-3 text-sm text-center"
             >
-              <span>
-                {new Date(r.week).toLocaleDateString()}
-              </span>
-              <span className="font-semibold">
-                {Math.floor(r.usdc_distributed)}
-              </span>
+              <div className="font-medium">#{r.WEEK}</div>
+
+              <div>
+                {new Date(r.DISTRIBUTION_DATE).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </div>
+
+              <div className="font-semibold">
+                {r.USDC.toLocaleString()}
+              </div>
+
+              <div className="text-gray-600">
+                {r.USERS.toLocaleString()}
+              </div>
             </div>
           ))}
         </div>
@@ -74,8 +93,9 @@ export default function WeeklyModal({
           </button>
 
           <button
+            disabled={page === totalPages}
             onClick={onNext}
-            className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white"
+            className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white disabled:opacity-50"
           >
             Next →
           </button>

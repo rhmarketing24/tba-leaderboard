@@ -1,0 +1,146 @@
+[
+  {
+    "WEEK": 24,
+    "DISTRIBUTION_DATE": "31 Dec 2025",
+    "USDC": 12146,
+    "USERS": 1951
+  },
+  {
+    "WEEK": 23,
+    "DISTRIBUTION_DATE": "24 Dec 2025",
+    "USDC": 12909,
+    "USERS": 1959
+  },
+  {
+    "WEEK": 22,
+    "DISTRIBUTION_DATE": "17 Dec 2025",
+    "USDC": 12293,
+    "USERS": 1946
+  },
+  {
+    "WEEK": 21,
+    "DISTRIBUTION_DATE": "10 Dec 2025",
+    "USDC": 12610,
+    "USERS": 1941
+  },
+  {
+    "WEEK": 20,
+    "DISTRIBUTION_DATE": "03 Dec 2025",
+    "USDC": 12433,
+    "USERS": 1945
+  },
+  {
+    "WEEK": 19,
+    "DISTRIBUTION_DATE": "26 Nov 2025",
+    "USDC": 12708,
+    "USERS": 1950
+  },
+  {
+    "WEEK": 18,
+    "DISTRIBUTION_DATE": "19 Nov 2025",
+    "USDC": 12562,
+    "USERS": 1948
+  },
+  {
+    "WEEK": 17,
+    "DISTRIBUTION_DATE": "12 Nov 2025",
+    "USDC": 12514,
+    "USERS": 1951
+  },
+  {
+    "WEEK": 16,
+    "DISTRIBUTION_DATE": "05 Nov 2025",
+    "USDC": 12725,
+    "USERS": 1987
+  },
+  {
+    "WEEK": 15,
+    "DISTRIBUTION_DATE": "29 Oct 2025",
+    "USDC": 23154,
+    "USERS": 3324
+  },
+  {
+    "WEEK": 14,
+    "DISTRIBUTION_DATE": "22 Oct 2025",
+    "USDC": 24623,
+    "USERS": 3515
+  },
+  {
+    "WEEK": 13,
+    "DISTRIBUTION_DATE": "15 Oct 2025",
+    "USDC": 25668,
+    "USERS": 3069
+  },
+  {
+    "WEEK": 12,
+    "DISTRIBUTION_DATE": "08 Oct 2025",
+    "USDC": 23308,
+    "USERS": 3363
+  },
+  {
+    "WEEK": 11,
+    "DISTRIBUTION_DATE": "01 Oct 2025",
+    "USDC": 23411,
+    "USERS": 3378
+  },
+  {
+    "WEEK": 10,
+    "DISTRIBUTION_DATE": "24 Sep 2025",
+    "USDC": 23462,
+    "USERS": 3357
+  },
+  {
+    "WEEK": 9,
+    "DISTRIBUTION_DATE": "17 Sep 2025",
+    "USDC": 23445,
+    "USERS": 3389
+  },
+  {
+    "WEEK": 8,
+    "DISTRIBUTION_DATE": "10 Sep 2025",
+    "USDC": 23908,
+    "USERS": 3363
+  },
+  {
+    "WEEK": 7,
+    "DISTRIBUTION_DATE": "03 Sep 2025",
+    "USDC": 12997,
+    "USERS": 3205
+  },
+  {
+    "WEEK": 6,
+    "DISTRIBUTION_DATE": "27 Aug 2025",
+    "USDC": 12904,
+    "USERS": 3128
+  },
+  {
+    "WEEK": 5,
+    "DISTRIBUTION_DATE": "20 Aug 2025",
+    "USDC": 12909,
+    "USERS": 3116
+  },
+  {
+    "WEEK": 4,
+    "DISTRIBUTION_DATE": "13 Aug 2025",
+    "USDC": 12713,
+    "USERS": 3144
+  },
+  {
+    "WEEK": 3,
+    "DISTRIBUTION_DATE": "06 Aug 2025",
+    "USDC": 13242,
+    "USERS": 3118
+  },
+  {
+    "WEEK": 2,
+    "DISTRIBUTION_DATE": "30 Jul 2025",
+    "USDC": 12472,
+    "USERS": 2985
+  },
+  {
+    "WEEK": 1,
+    "DISTRIBUTION_DATE": "23 Jul 2025",
+    "USDC": 11461,
+    "USERS": 2893
+  }
+]
