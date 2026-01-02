@@ -1,7 +1,24 @@
 {
-  "name": "TBA Leaderboard Mini App",
-  "description": "Leaderboard, Total, Weekly with daily check-in",
-  "icon": "/icon.png",
-  "homeUrl": "/",
-  "version": "1.0.0"
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "TBA Leaderboard",
+    "subtitle": "Weekly rewards & streaks",
+    "description": "Track TBA rewards, weekly distributions, and daily check-in streaks on Base.",
+    "homeUrl": "https://tba-leaderboard.vercel.app",
+    "iconUrl": "https://tba-leaderboard.vercel.app/icon.png",
+    "splashImageUrl": "https://tba-leaderboard.vercel.app/splash.png",
+    "splashBackgroundColor": "#ffffff",
+    "heroImageUrl": "https://tba-leaderboard.vercel.app/og.png",
+    "primaryCategory": "finance",
+    "tags": ["base", "leaderboard", "rewards"],
+    "ogTitle": "TBA Leaderboard",
+    "ogDescription": "Weekly rewards leaderboard with daily check-in streaks.",
+    "ogImageUrl": "https://tba-leaderboard.vercel.app/og.png",
+    "noindex": false
+  }
 }

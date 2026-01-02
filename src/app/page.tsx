@@ -57,25 +57,29 @@ export default function Home() {
   }, []);
 
   /* -------------------------------
-     SEARCH
+     🔍 SEARCH (TOP 10 ONLY)
   -------------------------------- */
-  const filteredRows = search
-    ? rows.filter((r) =>
-        r.RECEIVER_ADDRESS.toLowerCase().includes(search.toLowerCase())
-      )
+  const normalizedSearch = search.trim().toLowerCase();
+
+  const filteredRows = normalizedSearch
+    ? rows
+        .filter((r) =>
+          r.RECEIVER_ADDRESS.toLowerCase().includes(normalizedSearch)
+        )
+        .slice(0, 10) // ✅ only top 10
     : rows;
 
   /* -------------------------------
-     PAGINATION
+     PAGINATION (ONLY WHEN NO SEARCH)
   -------------------------------- */
   const start = (page - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
 
-  const paginatedRows = search
+  const paginatedRows = normalizedSearch
     ? filteredRows
     : filteredRows.slice(start, end);
 
-  const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
 
   return (
     <div className="min-h-screen bg-gray-100 pb-36">
@@ -92,7 +96,7 @@ export default function Home() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          placeholder="Search by address..."
+          placeholder="Search by address…"
           className="w-full rounded-xl border px-4 py-2"
         />
       </div>
@@ -138,7 +142,7 @@ export default function Home() {
       </div>
 
       {/* Pagination */}
-      {!search && (
+      {!normalizedSearch && (
         <div className="mx-4 mt-4 flex gap-3">
           <button
             disabled={page === 1}
