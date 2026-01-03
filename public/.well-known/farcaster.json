@@ -7,18 +7,36 @@
   "miniapp": {
     "version": "1",
     "name": "TBA Leaderboard",
-    "subtitle": "Weekly rewards & streaks",
-    "description": "Track TBA rewards, weekly distributions, and daily check-in streaks on Base.",
-    "homeUrl": "https://tba-leaderboard.vercel.app",
     "iconUrl": "https://tba-leaderboard.vercel.app/icon.png",
+    "homeUrl": "https://tba-leaderboard.vercel.app",
+    "imageUrl": "https://tba-leaderboard.vercel.app/og.png",
+    "buttonTitle": "Open TBA Leaderboard",
     "splashImageUrl": "https://tba-leaderboard.vercel.app/splash.png",
     "splashBackgroundColor": "#ffffff",
+    "webhookUrl": "https://tba-leaderboard.vercel.app/api/webhook",
+    "subtitle": "Weekly rewards and streaks",
+    "description": "Track TBA rewards, weekly distributions, and daily check-in streaks on Base",
+    "primaryCategory": "developer-tools",
+    "screenshotUrls": [
+      "https://tba-leaderboard.vercel.app/ss1.png",
+      "https://tba-leaderboard.vercel.app/ss2.png",
+      "https://tba-leaderboard.vercel.app/ss3.png"
+    ],
     "heroImageUrl": "https://tba-leaderboard.vercel.app/og.png",
-    "primaryCategory": "finance",
-    "tags": ["base", "leaderboard", "rewards"],
-    "ogTitle": "TBA Leaderboard",
+    "tags": [
+      "leaderboard",
+      "reward",
+      "weekly",
+      "creator",
+      "rank"
+    ],
+    "tagline": "Check creator reward stats",
+     "ogTitle": "TBA Leaderboard",
     "ogDescription": "Weekly rewards leaderboard with daily check-in streaks.",
     "ogImageUrl": "https://tba-leaderboard.vercel.app/og.png",
     "noindex": false
+  },
+  "baseBuilder": {
+    "ownerAddress": "0x7e57b5d42a37cc332cc54712db977f43baf2ff28"
   }
 }
