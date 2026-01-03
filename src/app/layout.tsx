@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       "Track TBA rewards, leaderboard rankings, and daily check-ins",
     images: [
       {
-        url: "/og.png", // public/og.png
+        url: "https://tba-leaderboard.vercel.app/og.png",
         width: 1200,
         height: 630,
         alt: "TBA Leaderboard",
@@ -22,15 +22,18 @@ export const metadata: Metadata = {
   },
 
   other: {
-    // 🔥 Base / Farcaster Mini App Embed
+    // ✅ EXACT Farcaster Mini App Embed (per docs)
     "fc:miniapp": JSON.stringify({
       version: "1",
       imageUrl: "https://tba-leaderboard.vercel.app/og.png",
       button: {
         title: "Open TBA Leaderboard",
         action: {
-          name: "Launch TBA Leaderboard",
+          type: "launch_miniapp", // 🔴 THIS WAS MISSING
+          name: "TBA Leaderboard",
           url: "https://tba-leaderboard.vercel.app",
+          splashImageUrl: "https://tba-leaderboard.vercel.app/icon.png",
+          splashBackgroundColor: "#f9fafb",
         },
       },
     }),
