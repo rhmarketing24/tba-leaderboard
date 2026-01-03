@@ -1,21 +1,39 @@
 // src/app/layout.tsx
-import { Metadata } from 'next'
+import type { Metadata } from "next";
 import "./globals.css";
 import ClientProviders from "./providers";
 
-const frame = {
-  version: "1",  // Not "next" - must be "1"
-  imageUrl: "https://tba-leaderboard.vercel.app/og.png", // 3:2 aspect ratio
+// 🔹 Mini App embed config (docs-style)
+const miniapp = {
+  version: "1", // must be "1"
+  imageUrl: "https://tba-leaderboard.vercel.app/og.png", // 3:2 ratio
   button: {
-    title: "Open Leaderboard",  // Max 32 characters
+    title: "Open TBA Leaderboard", // ≤ 32 chars
     action: {
-      type: "launch_frame",
+      type: "launch_miniapp", // 🔑 REQUIRED
       name: "TBA Leaderboard",
-      url: "https://tba-leaderboard.vercel.app",  // Optional, defaults to current URL
-      splashImageUrl: "https://tba-leaderboard.vercel.app/splash.png", // 200x200px
-      splashBackgroundColor: "#f7f7f7"
-    }
-  }
+      url: "https://tba-leaderboard.vercel.app",
+      splashImageUrl: "https://tba-leaderboard.vercel.app/splash.png", // 200x200
+      splashBackgroundColor: "#f9fafb",
+    },
+  },
+};
+
+// 🔹 Metadata generator (SERVER SIDE only)
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "TBA Leaderboard",
+    description: "Weekly rewards leaderboard with daily check-in streaks",
+    openGraph: {
+      title: "TBA Leaderboard",
+      description:
+        "Track TBA rewards, leaderboard rankings, and daily check-ins",
+      images: ["https://tba-leaderboard.vercel.app/og.png"],
+    },
+    other: {
+      "fc:miniapp": JSON.stringify(miniapp),
+    },
+  };
 }
 
 export default function RootLayout({
