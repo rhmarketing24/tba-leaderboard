@@ -1,44 +1,22 @@
 // src/app/layout.tsx
-import type { Metadata } from "next";
+import { Metadata } from 'next'
 import "./globals.css";
 import ClientProviders from "./providers";
 
-export const metadata: Metadata = {
-  title: "TBA Leaderboard",
-  description: "Weekly rewards leaderboard with daily check-in streaks",
-
-  openGraph: {
-    title: "TBA Leaderboard",
-    description:
-      "Track TBA rewards, leaderboard rankings, and daily check-ins",
-    images: [
-      {
-        url: "https://tba-leaderboard.vercel.app/og.png",
-        width: 1200,
-        height: 630,
-        alt: "TBA Leaderboard",
-      },
-    ],
-  },
-
-  other: {
-    // ✅ EXACT Farcaster Mini App Embed (per docs)
-    "fc:miniapp": JSON.stringify({
-      version: "1",
-      imageUrl: "https://tba-leaderboard.vercel.app/og.png",
-      button: {
-        title: "Open TBA Leaderboard",
-        action: {
-          type: "launch_miniapp", // 🔴 THIS WAS MISSING
-          name: "TBA Leaderboard",
-          url: "https://tba-leaderboard.vercel.app",
-          splashImageUrl: "https://tba-leaderboard.vercel.app/icon.png",
-          splashBackgroundColor: "#f9fafb",
-        },
-      },
-    }),
-  },
-};
+const frame = {
+  version: "1",  // Not "next" - must be "1"
+  imageUrl: "https://tba-leaderboard.vercel.app/og.png", // 3:2 aspect ratio
+  button: {
+    title: "Open Leaderboard",  // Max 32 characters
+    action: {
+      type: "launch_frame",
+      name: "TBA Leaderboard",
+      url: "https://tba-leaderboard.vercel.app",  // Optional, defaults to current URL
+      splashImageUrl: "https://tba-leaderboard.vercel.app/splash.png", // 200x200px
+      splashBackgroundColor: "#f7f7f7"
+    }
+  }
+}
 
 export default function RootLayout({
   children,
