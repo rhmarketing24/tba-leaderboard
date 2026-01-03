@@ -31,6 +31,10 @@ export async function generateMetadata(): Promise<Metadata> {
       images: ["https://tba-leaderboard.vercel.app/og.png"],
     },
     other: {
+      // ✅ Base App verification (JUST ADDED)
+      "base:app_id": "695969d6c63ad876c9081f6b",
+
+      // ✅ Farcaster / Base Mini App embed
       "fc:miniapp": JSON.stringify(miniapp),
     },
   };
