@@ -5,6 +5,7 @@ import {
   useAccount,
   useReadContract,
   useWriteContract,
+  useWaitForTransactionReceipt,
 } from "wagmi";
 import {
   CHECKIN_ABI,
@@ -19,6 +20,9 @@ type Props = {
 export default function CheckInModal({ open, onClose }: Props) {
   const { address } = useAccount();
 
+  /* --------------------
+     READ CONTRACT
+  -------------------- */
   const {
     data: currentStreak,
     refetch: refetchCurrent,
@@ -52,21 +56,32 @@ export default function CheckInModal({ open, onClose }: Props) {
     query: { enabled: !!address },
   });
 
+  /* --------------------
+     WRITE CONTRACT
+  -------------------- */
   const {
     writeContract,
+    data: hash,
     isPending,
-    isSuccess,
   } = useWriteContract();
 
+  const { isSuccess: txConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    });
+
+  /* --------------------
+     UI STATES
+  -------------------- */
   const [checkedInToday, setCheckedInToday] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [animateStreak, setAnimateStreak] = useState(false);
 
-  /* --------------------------------
-     INSTANT UI LOCK + ANIMATIONS
-  --------------------------------- */
+  /* --------------------
+     INSTANT UPDATE AFTER TX CONFIRM
+  -------------------- */
   useEffect(() => {
-    if (isSuccess) {
+    if (txConfirmed) {
       setCheckedInToday(true);
       setShowSuccess(true);
       setAnimateStreak(true);
@@ -84,11 +99,20 @@ export default function CheckInModal({ open, onClose }: Props) {
       };
     }
   }, [
-    isSuccess,
+    txConfirmed,
     refetchCurrent,
     refetchHighest,
     refetchCanCheckIn,
   ]);
+
+  /* --------------------
+     SYNC WHEN MODAL OPENS
+  -------------------- */
+  useEffect(() => {
+    if (open && canCheckIn === false) {
+      setCheckedInToday(true);
+    }
+  }, [open, canCheckIn]);
 
   if (!open) return null;
 
@@ -98,7 +122,7 @@ export default function CheckInModal({ open, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="relative w-[92%] max-w-sm rounded-2xl bg-white p-6 shadow-xl overflow-hidden">
-        {/* 🔥 Fire success animation */}
+        {/* 🔥 Fire animation */}
         {showSuccess && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="animate-ping text-6xl">🔥</div>
@@ -153,7 +177,7 @@ export default function CheckInModal({ open, onClose }: Props) {
               functionName: "checkIn",
             })
           }
-          className={`relative w-full rounded-xl py-3 text-sm font-semibold text-white transition ${
+          className={`w-full rounded-xl py-3 text-sm font-semibold text-white transition ${
             disabled
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-blue-600 active:scale-95"
@@ -163,13 +187,11 @@ export default function CheckInModal({ open, onClose }: Props) {
             ? "Checking in…"
             : checkedInToday
             ? "✅ Checked in today"
-            : canCheckIn
-            ? "🔥 Check In"
-            : "✅ Checked in today"}
+            : "🔥 Check In"}
         </button>
 
         {/* Tooltip */}
-        {(!canCheckIn || checkedInToday) && !isPending && (
+        {checkedInToday && !isPending && (
           <p className="mt-2 text-center text-xs text-gray-500">
             ⏰ Come back tomorrow (UTC)
           </p>
