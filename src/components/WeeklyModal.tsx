@@ -39,15 +39,20 @@ export default function WeeklyModal({
       {/* Modal */}
       <div className="w-[90%] max-w-sm max-h-[85vh] rounded-2xl bg-white p-5 shadow-xl flex flex-col">
         {/* Header */}
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Weekly Distributed</h2>
-          <button onClick={onClose} className="text-xl text-gray-500">
+        <div className="mb-3 flex items-center justify-center relative">
+          <h2 className="text-lg font-semibold text-center w-full">
+            Weekly Distributed
+          </h2>
+          <button
+            onClick={onClose}
+            className="absolute right-0 text-xl text-gray-500 hover:text-gray-700 transition"
+          >
             ✕
           </button>
         </div>
 
         {/* Column headers */}
-        <div className="grid grid-cols-[60px_1fr_80px_70px] px-3 py-2 text-xs font-semibold text-gray-500 text-center">
+        <div className="grid grid-cols-[60px_1fr_80px_70px] px-3 py-2 text-xs font-semibold text-gray-500 text-center border-b">
           <div>Week</div>
           <div>Date</div>
           <div>USDC</div>
@@ -55,13 +60,13 @@ export default function WeeklyModal({
         </div>
 
         {/* Rows */}
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1 mt-2">
           {paginated.map((r, i) => (
             <div
               key={i}
-              className="grid grid-cols-[60px_1fr_80px_70px] items-center rounded-xl border px-3 py-3 text-sm text-center"
+              className="grid grid-cols-[60px_1fr_80px_70px] items-center rounded-xl border px-3 py-3 text-sm text-center hover:bg-gray-50 transition"
             >
-              <div className="font-medium">#{r.WEEK}</div>
+              <div className="font-medium">{r.WEEK}</div>
 
               <div>
                 {new Date(r.DISTRIBUTION_DATE).toLocaleDateString("en-GB", {
@@ -71,7 +76,7 @@ export default function WeeklyModal({
                 })}
               </div>
 
-              <div className="font-semibold">
+              <div className="font-semibold text-blue-700">
                 {r.USDC.toLocaleString()}
               </div>
 
@@ -87,7 +92,7 @@ export default function WeeklyModal({
           <button
             disabled={page === 1}
             onClick={onPrev}
-            className="rounded-lg bg-gray-200 px-4 py-2 text-sm disabled:opacity-50"
+            className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300 transition disabled:opacity-50"
           >
             ← Prev
           </button>
@@ -95,7 +100,7 @@ export default function WeeklyModal({
           <button
             disabled={page === totalPages}
             onClick={onNext}
-            className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white disabled:opacity-50"
+            className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 transition disabled:opacity-50"
           >
             Next →
           </button>

@@ -27,8 +27,8 @@ interface WeeklyRow {
 -------------------------------- */
 function shortAddress(addr?: string) {
   if (!addr) return "";
-  if (addr.length <= 10) return addr;
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  if (addr.length <= 8) return addr;
+  return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
 }
 
 const PAGE_SIZE = 10;
@@ -52,7 +52,6 @@ export default function Home() {
   const [totalValue, setTotalValue] = useState(0);
   const [weeklyPage, setWeeklyPage] = useState(1);
 
-  // ✅ Sorting state
   const [sortField, setSortField] = useState<keyof LeaderboardRow | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
@@ -114,7 +113,6 @@ export default function Home() {
   const sortedRows = useMemo(() => {
     let sorted = [...rows];
 
-    // ✅ If sorting by LAST_WEEK_USDC_RECEIVED, 0 বাদ দিচ্ছি
     if (sortField === "LAST_WEEK_USDC_RECEIVED") {
       sorted = sorted.filter((r) => r.LAST_WEEK_USDC_RECEIVED > 0);
     }
@@ -236,14 +234,25 @@ export default function Home() {
           paginatedRows.map((r) => (
             <div
               key={r.RECEIVER_ADDRESS}
-              className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-3 text-sm text-center hover:bg-gray-50 transition"
+              className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-3 text-sm hover:bg-gray-50 transition"
             >
-              <div>#{r.RANK}</div>
-              <div className="truncate font-mono">
+              {/* Rank Center-Aligned */}
+              <div className="font-medium text-center">{r.RANK}</div>
+
+              {/* Address */}
+              <div className="truncate font-mono text-center">
                 {shortAddress(r.RECEIVER_ADDRESS)}
               </div>
-              <div className="font-medium">{r.TOTAL_USDC_RECEIVED}</div>
-              <div className="text-gray-600">{r.LAST_WEEK_USDC_RECEIVED}</div>
+
+              {/* USDC */}
+              <div className="font-medium text-center">
+                {r.TOTAL_USDC_RECEIVED}
+              </div>
+
+              {/* Last Week */}
+              <div className="text-gray-600 text-center">
+                {r.LAST_WEEK_USDC_RECEIVED}
+              </div>
             </div>
           ))}
       </div>
@@ -272,8 +281,6 @@ export default function Home() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 border-t bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <div className="mx-auto flex max-w-md items-center justify-between px-4 py-2.5">
-
-          {/* Total Button */}
           <button
             onClick={() => setOpenTotal(true)}
             className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-3 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-all duration-200 active:scale-[0.97]"
@@ -281,7 +288,6 @@ export default function Home() {
             🏆 <span>Total</span>
           </button>
 
-          {/* Check-in Button (Main) */}
           <button
             onClick={() => setOpenCheckIn(true)}
             className="flex items-center justify-center rounded-2xl bg-blue-500 px-10 py-3.5 text-sm font-semibold text-white shadow-md hover:bg-blue-600 active:scale-[0.97] transition-all duration-200"
@@ -289,7 +295,6 @@ export default function Home() {
             Check-in
           </button>
 
-          {/* Weekly Button */}
           <button
             onClick={() => setOpenWeekly(true)}
             className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-3 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-all duration-200 active:scale-[0.97]"
@@ -298,7 +303,6 @@ export default function Home() {
           </button>
         </div>
       </nav>
-
 
       {/* Modals */}
       <TotalModal
