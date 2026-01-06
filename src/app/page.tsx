@@ -1,22 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
+import { useEffect, useState, useMemo } from "react";
 import TotalModal from "@/components/TotalModal";
 import WeeklyModal from "@/components/WeeklyModal";
 import CheckInModal from "@/components/CheckInModal";
 
+/* -------------------------------
+   🧩 Type Definitions
+-------------------------------- */
+interface LeaderboardRow {
+  RANK: number;
+  RECEIVER_ADDRESS: string;
+  TOTAL_USDC_RECEIVED: number;
+  LAST_WEEK_USDC_RECEIVED: number;
+}
+
+interface WeeklyRow {
+  WEEK: number;
+  DISTRIBUTION_DATE: string;
+  USDC: number;
+  USERS: number;
+}
+
+/* -------------------------------
+   🪄 Utility Functions
+-------------------------------- */
 function shortAddress(addr?: string) {
   if (!addr) return "";
-  return addr.slice(0, 6) + "..." + addr.slice(-4);
+  if (addr.length <= 10) return addr;
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
 const PAGE_SIZE = 10;
 
+/* -------------------------------
+   🏠 Main Component
+-------------------------------- */
 export default function Home() {
-  const [rows, setRows] = useState<any[]>([]);
-  const [weeklyRows, setWeeklyRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [weeklyRows, setWeeklyRows] = useState<WeeklyRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -28,63 +52,114 @@ export default function Home() {
   const [totalValue, setTotalValue] = useState(0);
   const [weeklyPage, setWeeklyPage] = useState(1);
 
+  // ✅ Sorting state
+  const [sortField, setSortField] = useState<keyof LeaderboardRow | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
   /* -------------------------------
-     LOAD LOCAL JSON DATA
+     📦 Load Local JSON Data
   -------------------------------- */
   useEffect(() => {
     async function load() {
       setLoading(true);
+      setError(null);
 
-      const leaderboardRes = await fetch("/data/leaderboard.json");
-      const leaderboard = await leaderboardRes.json();
+      try {
+        const [leaderboardRes, weeklyRes] = await Promise.all([
+          fetch("/data/leaderboard.json"),
+          fetch("/data/weekly.json"),
+        ]);
 
-      const weeklyRes = await fetch("/data/weekly.json");
-      const weekly = await weeklyRes.json();
+        if (!leaderboardRes.ok || !weeklyRes.ok) {
+          throw new Error("Failed to load data files.");
+        }
 
-      setRows(leaderboard);
-      setWeeklyRows(weekly);
+        const [leaderboard, weekly] = await Promise.all([
+          leaderboardRes.json(),
+          weeklyRes.json(),
+        ]);
 
-      const total = leaderboard.reduce(
-        (sum: number, r: any) => sum + r.TOTAL_USDC_RECEIVED,
-        0
-      );
-      setTotalValue(Math.floor(total));
+        setRows(leaderboard as LeaderboardRow[]);
+        setWeeklyRows(weekly as WeeklyRow[]);
 
-      setLoading(false);
+        const total = leaderboard.reduce(
+          (sum: number, r: LeaderboardRow) =>
+            sum + (r.TOTAL_USDC_RECEIVED || 0),
+          0
+        );
+        setTotalValue(Math.floor(total));
+      } catch (err: any) {
+        console.error("Error loading data:", err);
+        setError("Could not load leaderboard data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
     }
 
     load();
   }, []);
 
   /* -------------------------------
-     🔍 SEARCH (TOP 10 ONLY)
+     🔃 Sorting Logic (Last Week 0 বাদ)
   -------------------------------- */
-  const normalizedSearch = search.trim().toLowerCase();
+  function handleSort(field: keyof LeaderboardRow) {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  }
 
-  const filteredRows = normalizedSearch
-    ? rows
-        .filter((r) =>
-          r.RECEIVER_ADDRESS.toLowerCase().includes(normalizedSearch)
-        )
-        .slice(0, 10) // ✅ only top 10
-    : rows;
+  const sortedRows = useMemo(() => {
+    let sorted = [...rows];
+
+    // ✅ If sorting by LAST_WEEK_USDC_RECEIVED, 0 বাদ দিচ্ছি
+    if (sortField === "LAST_WEEK_USDC_RECEIVED") {
+      sorted = sorted.filter((r) => r.LAST_WEEK_USDC_RECEIVED > 0);
+    }
+
+    if (sortField) {
+      sorted.sort((a, b) => {
+        const aVal = Number(a[sortField] ?? 0);
+        const bVal = Number(b[sortField] ?? 0);
+        return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+      });
+    }
+
+    return sorted;
+  }, [rows, sortField, sortOrder]);
 
   /* -------------------------------
-     PAGINATION (ONLY WHEN NO SEARCH)
+     🔍 Search
+  -------------------------------- */
+  const filteredRows = useMemo(() => {
+    const normalized = search.trim().toLowerCase();
+    if (!normalized) return sortedRows;
+    return sortedRows
+      .filter((r) =>
+        r.RECEIVER_ADDRESS.toLowerCase().includes(normalized)
+      )
+      .slice(0, 10);
+  }, [sortedRows, search]);
+
+  /* -------------------------------
+     📄 Pagination
   -------------------------------- */
   const start = (page - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
-
-  const paginatedRows = normalizedSearch
+  const paginatedRows = search.trim()
     ? filteredRows
     : filteredRows.slice(start, end);
+  const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
 
-  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
-
+  /* -------------------------------
+     🧱 Render
+  -------------------------------- */
   return (
     <div className="min-h-screen bg-gray-100 pb-36">
       {/* Header */}
-      <header className="bg-white p-4 text-center font-semibold shadow">
+      <header className="bg-white p-4 text-center font-semibold shadow text-lg">
         🏆 TBA Leaderboard
       </header>
 
@@ -96,18 +171,48 @@ export default function Home() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          placeholder="Search by address…"
-          className="w-full rounded-xl border px-4 py-2"
+          placeholder="🔍 Search by address..."
+          className="w-full rounded-xl border px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
       </div>
 
-      {/* Leaderboard */}
+      {/* Main Table */}
       <div className="mx-4 rounded-2xl bg-white shadow overflow-hidden">
-        <div className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-2 text-sm font-semibold">
-          <div>Rank</div>
+        <div className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-2 text-sm font-semibold bg-gray-50 text-center">
+          {/* Rank */}
+          <button
+            onClick={() => handleSort("RANK")}
+            className="hover:text-blue-600 transition flex items-center justify-center gap-1"
+          >
+            Rank
+            {sortField === "RANK" && (
+              <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+            )}
+          </button>
+
           <div>Address</div>
-          <div className="text-right">USDC</div>
-          <div className="text-right">Last Week</div>
+
+          {/* USDC */}
+          <button
+            onClick={() => handleSort("TOTAL_USDC_RECEIVED")}
+            className="hover:text-blue-600 transition flex items-center justify-center gap-1"
+          >
+            USDC
+            {sortField === "TOTAL_USDC_RECEIVED" && (
+              <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+            )}
+          </button>
+
+          {/* Last Week */}
+          <button
+            onClick={() => handleSort("LAST_WEEK_USDC_RECEIVED")}
+            className="hover:text-blue-600 transition flex items-center justify-center gap-1"
+          >
+            Last Week
+            {sortField === "LAST_WEEK_USDC_RECEIVED" && (
+              <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+            )}
+          </button>
         </div>
 
         {loading && (
@@ -116,38 +221,40 @@ export default function Home() {
           </p>
         )}
 
-        {!loading && paginatedRows.length === 0 && (
+        {error && (
+          <p className="p-6 text-center text-sm text-red-500">{error}</p>
+        )}
+
+        {!loading && !error && paginatedRows.length === 0 && (
           <p className="p-6 text-center text-sm text-gray-500">
             No matching address found.
           </p>
         )}
 
-        {paginatedRows.map((r: any) => (
-          <div
-            key={r.RECEIVER_ADDRESS}
-            className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-3 text-sm"
-          >
-            <div>#{r.RANK}</div>
-            <div className="truncate">
-              {shortAddress(r.RECEIVER_ADDRESS)}
+        {!loading &&
+          !error &&
+          paginatedRows.map((r) => (
+            <div
+              key={r.RECEIVER_ADDRESS}
+              className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-3 text-sm text-center hover:bg-gray-50 transition"
+            >
+              <div>#{r.RANK}</div>
+              <div className="truncate font-mono">
+                {shortAddress(r.RECEIVER_ADDRESS)}
+              </div>
+              <div className="font-medium">{r.TOTAL_USDC_RECEIVED}</div>
+              <div className="text-gray-600">{r.LAST_WEEK_USDC_RECEIVED}</div>
             </div>
-            <div className="text-right font-medium">
-              {r.TOTAL_USDC_RECEIVED}
-            </div>
-            <div className="text-right text-gray-600">
-              {r.LAST_WEEK_USDC_RECEIVED}
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {/* Pagination */}
-      {!normalizedSearch && (
+      {!search.trim() && !loading && !error && (
         <div className="mx-4 mt-4 flex gap-3">
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="flex-1 rounded-xl bg-blue-400 px-4 py-2 text-white disabled:opacity-50"
+            className="flex-1 rounded-xl bg-blue-100 px-4 py-2 font-medium text-blue-600 hover:bg-blue-200 transition disabled:opacity-40"
           >
             ← Previous
           </button>
@@ -155,7 +262,7 @@ export default function Home() {
           <button
             disabled={page === totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+            className="flex-1 rounded-xl bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 transition disabled:opacity-40"
           >
             Next →
           </button>
@@ -163,36 +270,42 @@ export default function Home() {
       )}
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
+      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <div className="mx-auto flex max-w-md items-center justify-between px-4 py-2.5">
+
+          {/* Total Button */}
           <button
             onClick={() => setOpenTotal(true)}
-            className="flex items-center gap-1 rounded-xl bg-gray-100 px-4 py-2 text-sm"
+            className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-3 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-all duration-200 active:scale-[0.97]"
           >
             🏆 <span>Total</span>
           </button>
 
+          {/* Check-in Button (Main) */}
           <button
             onClick={() => setOpenCheckIn(true)}
-            className="mx-2 flex items-center justify-center rounded-2xl bg-blue-500 px-8 py-3 text-sm font-semibold text-white"
+            className="flex items-center justify-center rounded-2xl bg-blue-500 px-10 py-3.5 text-sm font-semibold text-white shadow-md hover:bg-blue-600 active:scale-[0.97] transition-all duration-200"
           >
             Check-in
           </button>
 
+          {/* Weekly Button */}
           <button
             onClick={() => setOpenWeekly(true)}
-            className="flex items-center gap-1 rounded-xl bg-gray-100 px-4 py-2 text-sm"
+            className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-3 text-sm font-medium text-gray-800 hover:bg-gray-200 transition-all duration-200 active:scale-[0.97]"
           >
             📅 <span>Weekly</span>
           </button>
         </div>
       </nav>
 
+
       {/* Modals */}
       <TotalModal
         open={openTotal}
         onClose={() => setOpenTotal(false)}
         value={totalValue}
+        totalUsers={rows.length}
       />
 
       <WeeklyModal
