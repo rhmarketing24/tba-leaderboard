@@ -99,7 +99,7 @@ export default function Home() {
   }, []);
 
   /* -------------------------------
-     🔃 Sorting Logic (Last Week 0 বাদ)
+     🔃 Sorting Logic
   -------------------------------- */
   function handleSort(field: keyof LeaderboardRow) {
     if (sortField === field) {
@@ -177,7 +177,6 @@ export default function Home() {
       {/* Main Table */}
       <div className="mx-4 rounded-2xl bg-white shadow overflow-hidden">
         <div className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-2 text-sm font-semibold bg-gray-50 text-center">
-          {/* Rank */}
           <button
             onClick={() => handleSort("RANK")}
             className="hover:text-blue-600 transition flex items-center justify-center gap-1"
@@ -187,10 +186,7 @@ export default function Home() {
               <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
             )}
           </button>
-
           <div>Address</div>
-
-          {/* USDC */}
           <button
             onClick={() => handleSort("TOTAL_USDC_RECEIVED")}
             className="hover:text-blue-600 transition flex items-center justify-center gap-1"
@@ -200,8 +196,6 @@ export default function Home() {
               <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
             )}
           </button>
-
-          {/* Last Week */}
           <button
             onClick={() => handleSort("LAST_WEEK_USDC_RECEIVED")}
             className="hover:text-blue-600 transition flex items-center justify-center gap-1"
@@ -236,20 +230,13 @@ export default function Home() {
               key={r.RECEIVER_ADDRESS}
               className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-3 text-sm hover:bg-gray-50 transition"
             >
-              {/* Rank Center-Aligned */}
               <div className="font-medium text-center">{r.RANK}</div>
-
-              {/* Address */}
               <div className="truncate font-mono text-center">
                 {shortAddress(r.RECEIVER_ADDRESS)}
               </div>
-
-              {/* USDC */}
               <div className="font-medium text-center">
                 {r.TOTAL_USDC_RECEIVED}
               </div>
-
-              {/* Last Week */}
               <div className="text-gray-600 text-center">
                 {r.LAST_WEEK_USDC_RECEIVED}
               </div>
@@ -259,11 +246,19 @@ export default function Home() {
 
       {/* Pagination */}
       {!search.trim() && !loading && !error && (
-        <div className="mx-4 mt-4 flex gap-3">
+        <div className="mx-4 mt-4 flex flex-wrap gap-2 justify-center">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(1)}
+            className="rounded-xl bg-blue-100 px-4 py-2 font-medium text-blue-600 hover:bg-blue-200 transition disabled:opacity-40"
+          >
+            ⏮ First
+          </button>
+
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="flex-1 rounded-xl bg-blue-100 px-4 py-2 font-medium text-blue-600 hover:bg-blue-200 transition disabled:opacity-40"
+            className="rounded-xl bg-blue-100 px-4 py-2 font-medium text-blue-600 hover:bg-blue-200 transition disabled:opacity-40"
           >
             ← Previous
           </button>
@@ -271,9 +266,17 @@ export default function Home() {
           <button
             disabled={page === totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="flex-1 rounded-xl bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 transition disabled:opacity-40"
+            className="rounded-xl bg-blue-100 px-4 py-2 font-medium text-blue-600 hover:bg-blue-200 transition disabled:opacity-40"
           >
             Next →
+          </button>
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(totalPages)}
+            className="rounded-xl bg-blue-100 px-4 py-2 font-medium text-blue-600 hover:bg-blue-200 transition disabled:opacity-40"
+          >
+            Last ⏭
           </button>
         </div>
       )}
