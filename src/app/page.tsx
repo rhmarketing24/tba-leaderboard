@@ -66,7 +66,7 @@ export default function Home() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const [baseUser, setBaseUser] = useState<BaseUser | null>(null);
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
 
   /* -------------------------------
      📦 Load Local JSON Data
@@ -126,7 +126,7 @@ export default function Home() {
               displayName:
                 context.user.displayName ||
                 context.user.username ||
-                "Farcaster User",
+                "Base User",
               fid: context.user.fid,
               pfpUrl: context.user.pfpUrl,
             });
@@ -141,6 +141,28 @@ export default function Home() {
 
     loadUserData();
   }, []);
+
+  /* -------------------------------
+     🧠 Current User Rank Info (FIXED)
+  -------------------------------- */
+  const currentUser = useMemo(() => {
+    if (!address && !baseUser) return null;
+
+    // leaderboard.json থেকে ম্যাচ খুঁজে বের করা
+    const match = address
+      ? rows.find(
+          (r) => r.RECEIVER_ADDRESS.toLowerCase() === address.toLowerCase()
+        )
+      : null;
+
+    return {
+      name: baseUser?.displayName || "Anonymous",
+      address: address || "No wallet connected",
+      rank: match ? match.RANK : "-",
+      totalUSDC: match ? match.TOTAL_USDC_RECEIVED : 0, // ✅ এখন এটা ProfileDrawer এ যাবে
+      avatarUrl: baseUser?.pfpUrl || "/default-avatar.png",
+    };
+  }, [address, baseUser, rows]);
 
   /* -------------------------------
      🔃 Sorting Logic
@@ -184,26 +206,6 @@ export default function Home() {
       )
       .slice(0, 10);
   }, [sortedRows, search]);
-
-  /* -------------------------------
-     🧠 Current User Rank Info
-  -------------------------------- */
-  const currentUser = useMemo(() => {
-    if (!address && !baseUser) return null;
-
-    const match = address
-      ? rows.find(
-          (r) => r.RECEIVER_ADDRESS.toLowerCase() === address.toLowerCase()
-        )
-      : null;
-
-    return {
-      name: baseUser?.displayName || "Anonymous",
-      address: address || "No wallet connected",
-      rank: match ? match.RANK : "-",
-      avatarUrl: baseUser?.pfpUrl || "/default-avatar.png",
-    };
-  }, [address, baseUser, rows]);
 
   /* -------------------------------
      📄 Pagination
