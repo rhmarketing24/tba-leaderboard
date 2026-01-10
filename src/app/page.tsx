@@ -4,6 +4,9 @@ import { useEffect, useState, useMemo } from "react";
 import TotalModal from "@/components/TotalModal";
 import WeeklyModal from "@/components/WeeklyModal";
 import CheckInModal from "@/components/CheckInModal";
+import ProfileDrawer from "@/components/ProfileDrawer";
+import { sdk } from "@farcaster/miniapp-sdk";
+import { useAccount } from "wagmi";
 
 /* -------------------------------
    🧩 Type Definitions
@@ -20,6 +23,12 @@ interface WeeklyRow {
   DISTRIBUTION_DATE: string;
   USDC: number;
   USERS: number;
+}
+
+interface BaseUser {
+  displayName?: string;
+  fid?: number;
+  pfpUrl?: string;
 }
 
 /* -------------------------------
@@ -48,12 +57,16 @@ export default function Home() {
   const [openTotal, setOpenTotal] = useState(false);
   const [openWeekly, setOpenWeekly] = useState(false);
   const [openCheckIn, setOpenCheckIn] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
 
   const [totalValue, setTotalValue] = useState(0);
   const [weeklyPage, setWeeklyPage] = useState(1);
 
   const [sortField, setSortField] = useState<keyof LeaderboardRow | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  const [baseUser, setBaseUser] = useState<BaseUser | null>(null);
+  const { address, isConnected } = useAccount();
 
   /* -------------------------------
      📦 Load Local JSON Data
@@ -96,6 +109,37 @@ export default function Home() {
     }
 
     load();
+  }, []);
+
+  /* -------------------------------
+   👤 Fetch Base App User Info
+-------------------------------- */
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const miniAppStatus = await sdk.isInMiniApp();
+
+        if (miniAppStatus) {
+          const context = await sdk.context;
+          if (context?.user) {
+            setBaseUser({
+              displayName:
+                context.user.displayName ||
+                context.user.username ||
+                "Farcaster User",
+              fid: context.user.fid,
+              pfpUrl: context.user.pfpUrl,
+            });
+          }
+        } else {
+          console.log("Running outside Base app → fallback mode");
+        }
+      } catch (err) {
+        console.warn("Base user not available yet", err);
+      }
+    };
+
+    loadUserData();
   }, []);
 
   /* -------------------------------
@@ -142,6 +186,26 @@ export default function Home() {
   }, [sortedRows, search]);
 
   /* -------------------------------
+     🧠 Current User Rank Info
+  -------------------------------- */
+  const currentUser = useMemo(() => {
+    if (!address && !baseUser) return null;
+
+    const match = address
+      ? rows.find(
+          (r) => r.RECEIVER_ADDRESS.toLowerCase() === address.toLowerCase()
+        )
+      : null;
+
+    return {
+      name: baseUser?.displayName || "Anonymous",
+      address: address || "No wallet connected",
+      rank: match ? match.RANK : "-",
+      avatarUrl: baseUser?.pfpUrl || "/default-avatar.png",
+    };
+  }, [address, baseUser, rows]);
+
+  /* -------------------------------
      📄 Pagination
   -------------------------------- */
   const start = (page - 1) * PAGE_SIZE;
@@ -157,9 +221,32 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100 pb-36">
       {/* Header */}
-      <header className="bg-white p-4 text-center font-semibold shadow text-lg">
+      <header className="relative bg-white p-4 text-center font-semibold shadow text-lg flex items-center justify-center">
+        <button
+          onClick={() => setOpenProfile(true)}
+          className="absolute left-4"
+          aria-label="Profile Menu"
+        >
+          {baseUser?.pfpUrl ? (
+            <img
+              src={baseUser.pfpUrl}
+              alt="Profile"
+              className="w-8 h-8 rounded-full border border-gray-300 object-cover"
+            />
+          ) : (
+            <span className="text-2xl">👤</span>
+          )}
+        </button>
+
         🏆 TBA Leaderboard
       </header>
+
+      {/* Profile Drawer */}
+      <ProfileDrawer
+        open={openProfile}
+        onClose={() => setOpenProfile(false)}
+        user={currentUser || undefined}
+      />
 
       {/* Search */}
       <div className="p-4">
@@ -285,7 +372,6 @@ export default function Home() {
         value={totalValue}
         totalUsers={rows.length}
       />
-
       <WeeklyModal
         open={openWeekly}
         onClose={() => setOpenWeekly(false)}
@@ -294,7 +380,6 @@ export default function Home() {
         onPrev={() => setWeeklyPage((p) => Math.max(1, p - 1))}
         onNext={() => setWeeklyPage((p) => p + 1)}
       />
-
       <CheckInModal
         open={openCheckIn}
         onClose={() => setOpenCheckIn(false)}
