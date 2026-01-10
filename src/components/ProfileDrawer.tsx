@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
+import { sdk } from "@farcaster/miniapp-sdk";
 
 type ProfileDrawerProps = {
   open: boolean;
@@ -10,6 +11,7 @@ type ProfileDrawerProps = {
   user?: {
     name: string;
     rank: number | string;
+    totalUSDC?: number | string;
     avatarUrl?: string;
   };
 };
@@ -19,43 +21,35 @@ export default function ProfileDrawer({ open, onClose, user }: ProfileDrawerProp
 
   const handleShare = async () => {
     try {
-      const shareText = `🏅 My TBA Rank: #${user?.rank} — Check yours at TBA Leaderboard!`;
-      const shareUrl = "https://tba-leaderboard.vercel.app";
+      if (!cardRef.current) return;
 
-      if (cardRef.current) {
-        const canvas = await html2canvas(cardRef.current, {
-          backgroundColor: "#ffffff",
-          scale: 2,
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+      });
+      const dataUrl = canvas.toDataURL("image/png");
+
+      const caption = `🏅 My TBA Rank: #${user?.rank || "--"} — Earned ${user?.totalUSDC || 0} USDC on Base! 💰`;
+
+      const miniAppStatus = await sdk.isInMiniApp();
+
+      if (miniAppStatus) {
+        await sdk.actions.composeCast({
+          text: caption,
+          embeds: [dataUrl],
         });
-        const blob = await new Promise<Blob | null>((resolve) =>
-          canvas.toBlob((b) => resolve(b), "image/png")
-        );
-
-        if (
-          blob &&
-          navigator.canShare &&
-          navigator.canShare({
-            files: [new File([blob], "rank.png", { type: "image/png" })],
-          })
-        ) {
-          const file = new File([blob], "rank.png", { type: "image/png" });
-          await navigator.share({
-            title: "TBA Leaderboard",
-            text: shareText,
-            files: [file],
-          });
-          return;
-        } else if (navigator.share) {
-          await navigator.share({
-            title: "TBA Leaderboard",
-            text: shareText,
-            url: shareUrl,
-          });
-          return;
-        }
+        return;
       }
 
-      alert("Sharing not supported on this device.");
+      if (navigator.share) {
+        await navigator.share({
+          title: "TBA Leaderboard",
+          text: caption,
+          url: "https://tba-leaderboard.vercel.app",
+        });
+      } else {
+        alert("Sharing not supported on this device.");
+      }
     } catch (err) {
       console.error("Share failed:", err);
     }
@@ -93,11 +87,12 @@ export default function ProfileDrawer({ open, onClose, user }: ProfileDrawerProp
               </button>
             </div>
 
-            {/* Profile Card */}
+            {/* Profile Section */}
             <div className="px-6 pt-6">
+              {/* Profile Card */}
               <div
                 ref={cardRef}
-                className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-md p-6 text-center"
+                className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow p-5 text-center"
               >
                 <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-blue-300 mx-auto">
                   <img
@@ -107,34 +102,37 @@ export default function ProfileDrawer({ open, onClose, user }: ProfileDrawerProp
                   />
                 </div>
 
-                <p className="mt-4 text-lg font-semibold text-gray-900">
+                <p className="mt-3 text-lg font-semibold text-gray-900">
                   {user?.name || "Anonymous"}
                 </p>
 
-                <div className="mt-3 inline-block bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full font-medium">
-                  🏅 Rank #{user?.rank || "--"}
+                {/* Rank + USDC */}
+                <div className="mt-4 flex justify-between bg-white rounded-xl shadow-inner py-3 px-4">
+                  <div className="flex flex-col items-center flex-1 border-r border-gray-200">
+                    <span className="text-sm text-gray-500">Rank</span>
+                    <span className="text-blue-600 font-bold text-lg">
+                      #{user?.rank || "--"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center flex-1">
+                    <span className="text-sm text-gray-500">USDC</span>
+                    <span className="text-blue-600 font-bold text-lg">
+                      {user?.totalUSDC || 0}
+                    </span>
+                  </div>
                 </div>
-
-                <p className="mt-2 text-xs text-gray-500">
-                  TBA Leaderboard — {new Date().getFullYear()}
-                </p>
               </div>
 
-              {/* Share Button (right below card) */}
+              {/* Share Button (Gradient Style) */}
               <div className="mt-5">
                 <button
                   onClick={handleShare}
-                  className="w-full rounded-xl bg-blue-500 text-white py-3 font-semibold flex items-center justify-center gap-2 hover:bg-blue-600 transition"
+                  className="w-full rounded-xl bg-gradient-to-r from-blue-400 to-blue-500 text-white py-3 font-semibold flex items-center justify-center gap-2 shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
                 >
                   <img src="/share-icon.png" alt="share" className="w-5 h-5" />
                   Share My Rank
                 </button>
               </div>
-            </div>
-
-            {/* Placeholder area for future info */}
-            <div className="flex-grow px-6 py-6">
-              {/* 🔹 এখানে পরে তুমি নিজের info section add করতে পারবে */}
             </div>
           </motion.div>
         </>
