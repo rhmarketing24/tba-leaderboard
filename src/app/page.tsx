@@ -99,7 +99,7 @@ export default function Home() {
   }, []);
 
   /* -------------------------------
-     🔃 Sorting Logic (Last Week 0 বাদ)
+     🔃 Sorting Logic
   -------------------------------- */
   function handleSort(field: keyof LeaderboardRow) {
     if (sortField === field) {
@@ -176,8 +176,7 @@ export default function Home() {
 
       {/* Main Table */}
       <div className="mx-4 rounded-2xl bg-white shadow overflow-hidden">
-        <div className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-2 text-sm font-semibold bg-gray-50 text-center">
-          {/* Rank */}
+        <div className="grid grid-cols-[60px_minmax(120px,1fr)_75px_75px] border-b px-4 py-2 text-sm font-semibold bg-gray-50 text-center">
           <button
             onClick={() => handleSort("RANK")}
             className="hover:text-blue-600 transition flex items-center justify-center gap-1"
@@ -190,7 +189,6 @@ export default function Home() {
 
           <div>Address</div>
 
-          {/* USDC */}
           <button
             onClick={() => handleSort("TOTAL_USDC_RECEIVED")}
             className="hover:text-blue-600 transition flex items-center justify-center gap-1"
@@ -201,40 +199,23 @@ export default function Home() {
             )}
           </button>
 
-          {/* Last Week */}
           <button
             onClick={() => handleSort("LAST_WEEK_USDC_RECEIVED")}
             className="hover:text-blue-600 transition flex items-center justify-center gap-1"
           >
-            Last Week
+            Recent
             {sortField === "LAST_WEEK_USDC_RECEIVED" && (
               <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
             )}
           </button>
         </div>
 
-        {loading && (
-          <p className="p-6 text-center text-sm text-gray-500">
-            Loading leaderboard…
-          </p>
-        )}
-
-        {error && (
-          <p className="p-6 text-center text-sm text-red-500">{error}</p>
-        )}
-
-        {!loading && !error && paginatedRows.length === 0 && (
-          <p className="p-6 text-center text-sm text-gray-500">
-            No matching address found.
-          </p>
-        )}
-
         {!loading &&
           !error &&
           paginatedRows.map((r) => (
             <div
               key={r.RECEIVER_ADDRESS}
-              className="grid grid-cols-[60px_1fr_90px_90px] border-b px-4 py-3 text-sm hover:bg-gray-50 transition"
+              className="grid grid-cols-[60px_minmax(120px,1fr)_75px_75px] border-b px-4 py-3 text-sm hover:bg-gray-50 transition"
             >
               <div className="font-medium text-center">{r.RANK}</div>
               <div className="truncate font-mono text-center">
