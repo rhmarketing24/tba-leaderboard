@@ -66,6 +66,7 @@ export default function Home() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const [baseUser, setBaseUser] = useState<BaseUser | null>(null);
+  const [resolvedAddress, setResolvedAddress] = useState<string | null>(null); // 🟢 added
   const { address } = useAccount();
 
   /* -------------------------------
@@ -112,7 +113,7 @@ export default function Home() {
   }, []);
 
   /* -------------------------------
-   👤 Fetch Base App User Info
+   👤 Fetch Base App User Info + Neynar fallback
 -------------------------------- */
   useEffect(() => {
     const loadUserData = async () => {
@@ -130,6 +131,61 @@ export default function Home() {
               fid: context.user.fid,
               pfpUrl: context.user.pfpUrl,
             });
+
+            // 🟢 If no wallet connected (Farcaster case), resolve address via Neynar
+            if (!address && context.user.fid) {
+              try {
+                const cached = localStorage.getItem(`wallet_${context.user.fid}`);
+                if (cached) {
+                  setResolvedAddress(cached);
+                  return;
+                }
+
+                const res = await fetch(
+                  `https://api.neynar.com/v2/farcaster/user/bulk-by-fid?fids=${context.user.fid}`,
+                  {
+                    headers: {
+                      accept: "application/json",
+                      api_key:
+                        process.env.NEXT_PUBLIC_NEYNAR_API_KEY ||
+                        process.env.NEYNAR_API_KEY!,
+                    },
+                  }
+                );
+
+                if (res.ok) {
+                  const data = await res.json();
+                  const user = data.users?.[0];
+                  let found: string | null = null;
+
+                  if (user?.verifications?.length) {
+                    // leaderboard.json এর address এর সাথে মিলিয়ে খুঁজে বের করা
+                    for (const addr of user.verifications) {
+                      const match = rows.find(
+                        (r) =>
+                          r.RECEIVER_ADDRESS.toLowerCase() === addr.toLowerCase()
+                      );
+                      if (match) {
+                        found = addr;
+                        break;
+                      }
+                    }
+                  }
+
+                  // fallback হিসেবে custody address নাও
+                  if (!found && user?.custody_address) {
+                    found = user.custody_address;
+                  }
+
+                  if (found) {
+                    localStorage.setItem(`wallet_${context.user.fid}`, found);
+                    setResolvedAddress(found);
+                  }
+                }
+              } catch (err) {
+                console.warn("Neynar fallback failed", err);
+              }
+            }
           }
         } else {
           console.log("Running outside Base app → fallback mode");
@@ -140,29 +196,30 @@ export default function Home() {
     };
 
     loadUserData();
-  }, []);
+  }, [rows, address]);
 
   /* -------------------------------
      🧠 Current User Rank Info (FIXED)
   -------------------------------- */
   const currentUser = useMemo(() => {
-    if (!address && !baseUser) return null;
+    const activeAddress = address || resolvedAddress; // 🟢 updated
+    if (!activeAddress && !baseUser) return null;
 
     // leaderboard.json থেকে ম্যাচ খুঁজে বের করা
-    const match = address
+    const match = activeAddress
       ? rows.find(
-          (r) => r.RECEIVER_ADDRESS.toLowerCase() === address.toLowerCase()
+          (r) => r.RECEIVER_ADDRESS.toLowerCase() === activeAddress.toLowerCase()
         )
       : null;
 
     return {
       name: baseUser?.displayName || "Anonymous",
-      address: address || "No wallet connected",
+      address: activeAddress || "No wallet connected",
       rank: match ? match.RANK : "-",
-      totalUSDC: match ? match.TOTAL_USDC_RECEIVED : 0, // ✅ এখন এটা ProfileDrawer এ যাবে
+      totalUSDC: match ? match.TOTAL_USDC_RECEIVED : 0,
       avatarUrl: baseUser?.pfpUrl || "/default-avatar.png",
     };
-  }, [address, baseUser, rows]);
+  }, [address, resolvedAddress, baseUser, rows]);
 
   /* -------------------------------
      🔃 Sorting Logic
