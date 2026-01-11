@@ -66,7 +66,6 @@ export default function Home() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const [baseUser, setBaseUser] = useState<BaseUser | null>(null);
-  const [resolvedAddress, setResolvedAddress] = useState<string | null>(null);
   const { address } = useAccount();
 
   /* -------------------------------
@@ -113,7 +112,7 @@ export default function Home() {
   }, []);
 
   /* -------------------------------
-   👤 Fetch Base App or Farcaster User Info
+   👤 Fetch Base App User Info
 -------------------------------- */
   useEffect(() => {
     const loadUserData = async () => {
@@ -133,87 +132,37 @@ export default function Home() {
             });
           }
         } else {
-          console.log("Running inside Farcaster → fetching Neynar user info...");
-
-          const apiKey = process.env.NEXT_PUBLIC_NEYNAR_API_KEY;
-          if (!apiKey) {
-            console.warn("Neynar API key missing!");
-            return;
-          }
-
-          const res = await fetch("https://api.neynar.com/v2/farcaster/user", {
-            headers: {
-              accept: "application/json",
-              api_key: apiKey,
-            },
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            const user = data?.user;
-
-            if (user) {
-              setBaseUser({
-                displayName: user.display_name || user.username || "Farcaster User",
-                fid: user.fid,
-                pfpUrl: user.pfp_url,
-              });
-
-              // ✅ verified addresses + custody fallback
-              const allAddresses = [
-                ...(user.verifications || []),
-                user.custody_address,
-              ].filter(Boolean);
-
-              let matchAddr: string | null = null;
-              for (const addr of allAddresses) {
-                const found = rows.find(
-                  (r) =>
-                    r.RECEIVER_ADDRESS.toLowerCase() === addr.toLowerCase()
-                );
-                if (found) {
-                  matchAddr = addr;
-                  break;
-                }
-              }
-
-              if (matchAddr) setResolvedAddress(matchAddr);
-            }
-          } else {
-            console.warn("Farcaster API fetch failed:", res.statusText);
-          }
+          console.log("Running outside Base app → fallback mode");
         }
       } catch (err) {
-        console.warn("Base/Farcaster user detection failed:", err);
+        console.warn("Base user not available yet", err);
       }
     };
 
     loadUserData();
-  }, [rows]);
+  }, []);
 
   /* -------------------------------
      🧠 Current User Rank Info (FIXED)
   -------------------------------- */
   const currentUser = useMemo(() => {
-    const activeAddress = address || resolvedAddress;
+    if (!address && !baseUser) return null;
 
-    if (!activeAddress && !baseUser) return null;
-
-    const match = activeAddress
+    // leaderboard.json থেকে ম্যাচ খুঁজে বের করা
+    const match = address
       ? rows.find(
-          (r) =>
-            r.RECEIVER_ADDRESS.toLowerCase() === activeAddress.toLowerCase()
+          (r) => r.RECEIVER_ADDRESS.toLowerCase() === address.toLowerCase()
         )
       : null;
 
     return {
       name: baseUser?.displayName || "Anonymous",
-      address: activeAddress || "No wallet connected",
+      address: address || "No wallet connected",
       rank: match ? match.RANK : "-",
-      totalUSDC: match ? match.TOTAL_USDC_RECEIVED : 0,
+      totalUSDC: match ? match.TOTAL_USDC_RECEIVED : 0, // ✅ এখন এটা ProfileDrawer এ যাবে
       avatarUrl: baseUser?.pfpUrl || "/default-avatar.png",
     };
-  }, [address, resolvedAddress, baseUser, rows]);
+  }, [address, baseUser, rows]);
 
   /* -------------------------------
      🔃 Sorting Logic
