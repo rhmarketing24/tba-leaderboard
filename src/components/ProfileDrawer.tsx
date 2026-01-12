@@ -41,15 +41,21 @@ export default function ProfileDrawer({ open, onClose, user }: ProfileDrawerProp
             transition={{ type: "spring", stiffness: 280, damping: 30 }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b">
-              <h2 className="text-sm font-semibold text-gray-800">
+            <div className="relative flex items-center px-5 py-4 border-b">
+              <h2
+                className={`text-sm font-semibold text-gray-800 ${hasStats
+                    ? "absolute left-1/2 -translate-x-1/2"
+                    : ""
+                  }`}
+              >
                 {hasStats
                   ? "Stay Based"
                   : "Open with Base app to view your stats"}
               </h2>
+
               <button
                 onClick={onClose}
-                className="text-xl text-gray-500 hover:text-black"
+                className="ml-auto text-xl text-gray-500 hover:text-black"
               >
                 ✕
               </button>
@@ -85,6 +91,18 @@ export default function ProfileDrawer({ open, onClose, user }: ProfileDrawerProp
                   </div>
                 </div>
               </div>
+
+              {/* 👉 Base App CTA (ONLY when stats not available) */}
+              {!hasStats && (
+                <a
+                  href="https://base.app/app/tba-leaderboard.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 text-white py-3 font-semibold shadow hover:bg-blue-700 active:scale-[0.98] transition"
+                >
+                  Open in Base app
+                </a>
+              )}
             </div>
 
             {/* Follow / Support Section */}
