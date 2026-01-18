@@ -5,6 +5,7 @@ import TotalModal from "@/components/TotalModal";
 import WeeklyModal from "@/components/WeeklyModal";
 import CheckInModal from "@/components/CheckInModal";
 import ProfileDrawer from "@/components/ProfileDrawer";
+import InfoModal from "@/components/InfoModal"; // 🆕 নতুন লাইন
 import { sdk } from "@farcaster/miniapp-sdk";
 import { useAccount } from "wagmi";
 
@@ -58,6 +59,7 @@ export default function Home() {
   const [openWeekly, setOpenWeekly] = useState(false);
   const [openCheckIn, setOpenCheckIn] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
+  const [openInfo, setOpenInfo] = useState(false); // 🆕 InfoModal state
 
   const [totalValue, setTotalValue] = useState(0);
   const [weeklyPage, setWeeklyPage] = useState(1);
@@ -148,7 +150,6 @@ export default function Home() {
   const currentUser = useMemo(() => {
     if (!address && !baseUser) return null;
 
-    // leaderboard.json থেকে ম্যাচ খুঁজে বের করা
     const match = address
       ? rows.find(
           (r) => r.RECEIVER_ADDRESS.toLowerCase() === address.toLowerCase()
@@ -159,7 +160,7 @@ export default function Home() {
       name: baseUser?.displayName || "Anonymous",
       address: address || "No wallet connected",
       rank: match ? match.RANK : "-",
-      totalUSDC: match ? match.TOTAL_USDC_RECEIVED : 0, // ✅ এখন এটা ProfileDrawer এ যাবে
+      totalUSDC: match ? match.TOTAL_USDC_RECEIVED : 0,
       avatarUrl: baseUser?.pfpUrl || "/default-avatar.png",
     };
   }, [address, baseUser, rows]);
@@ -224,6 +225,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-100 pb-36">
       {/* Header */}
       <header className="relative bg-white p-4 text-center font-semibold shadow text-lg flex items-center justify-center">
+        {/* Profile (Left) */}
         <button
           onClick={() => setOpenProfile(true)}
           className="absolute left-4"
@@ -241,6 +243,15 @@ export default function Home() {
         </button>
 
         🏆 TBA Leaderboard
+
+        {/* Info Icon (Right) 🆕 */}
+        <button
+          onClick={() => setOpenInfo(true)}
+          className="absolute right-4 text-gray-600 hover:text-blue-600 transition text-xl"
+          aria-label="Info"
+        >
+          ℹ️
+        </button>
       </header>
 
       {/* Profile Drawer */}
@@ -382,10 +393,10 @@ export default function Home() {
         onPrev={() => setWeeklyPage((p) => Math.max(1, p - 1))}
         onNext={() => setWeeklyPage((p) => p + 1)}
       />
-      <CheckInModal
-        open={openCheckIn}
-        onClose={() => setOpenCheckIn(false)}
-      />
+      <CheckInModal open={openCheckIn} onClose={() => setOpenCheckIn(false)} />
+
+      {/* 🆕 Info Modal */}
+      <InfoModal open={openInfo} onClose={() => setOpenInfo(false)} />
     </div>
   );
 }
